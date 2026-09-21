@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI search crawlers vs training crawlers — which ones decide if you get cited</title>
+<meta name="description" content="OAI-SearchBot, Claude-SearchBot and PerplexityBot decide whether AI assistants can cite your site. GPTBot and ClaudeBot only train models. Reference plus six robots.txt parsing rules.">
+<link rel="canonical" href="https://bizpartnership.github.io/ai-search-crawlers/">
+<style>
+:root{color-scheme:light dark}
+body{max-width:46rem;margin:0 auto;padding:2.5rem 1.25rem 5rem;
+ font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1{font-size:1.9rem;line-height:1.25;margin:0 0 .4rem}
+h2{font-size:1.25rem;margin:2.4rem 0 .6rem}
+p{margin:0 0 1rem}
+pre{background:#f4f4f5;padding:.9rem 1rem;border-radius:6px;overflow-x:auto;font-size:14px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+a{color:#0b5cd5}
+.sub{color:#666;margin-bottom:2rem}
+footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid #e4e4e7;font-size:15px;color:#666}
+@media(prefers-color-scheme:dark){pre{background:#1c1c1f}a{color:#6ea8fe}
+ footer{border-color:#2a2a2e}.sub{color:#9a9aa0}}
+</style>
+</head>
+<body>
+<h1>AI search crawlers and training crawlers are not the same thing</h1>
+<p class="sub">A reference for anyone who wants ChatGPT, Claude or Perplexity to be able to cite their site.</p>
+<p>Every major AI vendor runs two different crawlers, and blocking them means two completely different things.</p>
+<p>One crawler builds the search index that the assistant reads when it answers a question. Block that one and your site cannot be cited, no matter how good your content is.</p>
+<p>The other crawler collects text for model training. Blocking it is a normal business decision and it does not affect whether you get cited today.</p>
+<p>Most guides you will find treat the two kinds as one thing. That difference decides whether a customer asking ChatGPT for a recommendation ever hears your name.</p>
+<h2>Search crawlers. Blocking these removes you from AI answers.</h2>
+<p>OAI-SearchBot builds the index behind ChatGPT Search. The crawler named ChatGPT-User will fetch a page when someone follows a link inside a chat. Claude-SearchBot and Claude-User do the same for Claude. PerplexityBot and Perplexity-User do the same for Perplexity.</p>
+<h2>Training crawlers. Blocking these is fine.</h2>
+<p>GPTBot collects text for OpenAI model training. ClaudeBot and anthropic-ai do the same for Anthropic. Google-Extended controls Gemini training, and it has no effect on Google Search or on AI Overviews. Applebot-Extended, CCBot and Bytespider round out the list.</p>
+<p>The practical consequence is short. If a site blocks GPTBot, nothing is broken. If a site blocks OAI-SearchBot, the site has removed itself from ChatGPT answers, and almost nobody who did it knows.</p>
+<h2>Six rules that break naive robots.txt parsers</h2>
+<p>Each of these came out of parsing real files rather than reading the specification.</p>
+<p>Two or more User-agent lines in a row belong to a single group. Site builders write this constantly: one User-agent line for GPTBot, another for OAI-SearchBot directly below it, then a single Disallow. Both bots are blocked. A parser that reads only the last name will miss it.</p>
+<p>A named group beats the wildcard. If User-agent star says Disallow slash, and a separate group for OAI-SearchBot says Allow slash, then ChatGPT is allowed. Reading these in the wrong order produces a false alarm.</p>
+<p>Inside one group, the longest matching rule wins. When two rules are the same length, Allow wins. The standard says so, and it leaves no room for preference.</p>
+<p>An empty Disallow line means everything is permitted. It is not a rule and should not be counted as one.</p>
+<p>A few hosting providers will serve HTML where the robots.txt file should be. They answer any unknown path with the homepage and a 200 code. Parsing that produces invented verdicts, so check the first few hundred characters for an html tag and treat the file as missing.</p>
+<p>No file means everything is open. A 404 and a network error are treated the same way.</p>
+<h2>Check your own site</h2>
+<p>Run this and read what comes back.</p>
+<pre><code>curl -s https://yourdomain.com/robots.txt | grep -iA2 "OAI-SearchBot\|Claude-SearchBot\|PerplexityBot"</code></pre>
+<p>An empty result is good news when no file exists at all, and bad news when the file exists and blocks those names.</p>
+<h2>Why this page exists</h2>
+<p>We build <a href="https://askchat.studio/">askChat Studio</a>, which measures whether AI assistants name a local business when customers ask for a recommendation. Crawler access is the first thing we check, because everything else is pointless when the door is closed. The reference is here because we needed it ourselves and found no clear version of it anywhere.</p>
+<footer>
+<p>Maintained by the team behind <a href="https://askchat.studio/">askChat Studio</a>.
+Corrections are welcome through the issue tracker on
+<a href="https://github.com/bizpartnership/ai-search-crawlers">GitHub</a>.</p>
+</footer>
+</body>
+</html>
